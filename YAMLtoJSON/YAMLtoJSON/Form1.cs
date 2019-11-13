@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using YAMLtoJSON.Convertor;
 
 namespace YAMLtoJSON
 {
@@ -16,11 +17,44 @@ namespace YAMLtoJSON
         public delegate string ConvertDelegate(object data);
 
         public delegate void SetOutPut(string data);
+        private const string Document = @"---
+            receipt:    Oz-Ware Purchase Invoice
+            date:        2007-08-06
+            customer:
+                given:   Dorothy
+                family:  Gale
 
-        #endregion 属性
+            items:
+                - part_no:   A4786
+                  descrip:   Water Bucket (Filled)
+                  price:     1.47
+                  quantity:  4
 
-        #region 方法
-        public Form1()
+                - part_no:   E1628
+                  descrip:   High Heeled ""Ruby"" Slippers
+                  price:     100.27
+                  quantity:  1
+
+            bill-to:  &id001
+                street: |
+                        123 Tornado Alley
+                        Suite 16
+                city:   East Westville
+                state:  KS
+
+            ship-to:  *id001
+
+            specialDelivery:  >
+                Follow the Yellow Brick
+                Road to the Emerald City.
+                Pay no attention to the
+                man behind the curtain.
+...";
+    
+    #endregion 属性
+
+    #region 方法
+    public Form1()
         {
             InitializeComponent();
         }
@@ -72,10 +106,18 @@ namespace YAMLtoJSON
             while (true)
             {
                 resetEvent.WaitOne();
-
                 string datastr = data as string;
+                YAMLParser yaml = new YAMLParser();
+                #region 方法一
+                object yamlObject = yaml.ParseYamlString(datastr);
+                string jsonStr1 = yaml.ToJson(datastr);
+                #endregion
+                #region 方法二
+                JSONParser json = new JSONParser();
+                string jsonStr2 = json.ParseJsonObject(yamlObject);
+                #endregion
                 resetEvent.Reset();
-                return datastr;
+                return jsonStr1;
             }
         }
 
